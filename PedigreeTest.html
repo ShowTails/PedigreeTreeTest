@@ -7,6 +7,10 @@
   
   <title>4-Generation Rabbit Pedigree</title>
 <style>
+  :root {
+    --mobile-print-scale: 1;
+  }
+
   html, body {
     margin: 0;
     padding: 0;
@@ -88,19 +92,37 @@ svg {
   margin: 0;
   padding: 0;
   background: white;
-}
+    }
 
-svg {
-  width: 10.8in !important;
-  height: 8.3in !important;
-  transform: none !important;
-  background: white !important;
-  margin: 0 auto !important;
-}
+    svg {
+      width: 10.8in !important;
+      height: 8.3in !important;
+      transform: none !important;
+      background: white !important;
+      margin: 0 auto !important;
+    }
 
-#logo {
-  outline: 2px dashed red;
-}
+    body.mobile-print {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 11in;
+      height: 8.5in;
+    }
+
+    body.mobile-print #pedigree-container {
+      transform: scale(var(--mobile-print-scale, 1));
+      transform-origin: center center;
+    }
+
+    body.mobile-print svg {
+      width: 10.8in !important;
+      height: 8.3in !important;
+    }
+
+    #logo {
+      outline: 2px dashed red;
+    }
 
 
     #print-btn,
