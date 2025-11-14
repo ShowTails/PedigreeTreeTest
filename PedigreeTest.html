@@ -8,7 +8,10 @@
   <title>4-Generation Rabbit Pedigree</title>
 <style>
   :root {
-    --mobile-print-scale: 1;
+    --print-container-width: 11in;
+    --print-container-height: 8.5in;
+    --print-svg-width: 10.8in;
+    --print-svg-height: 8.3in;
   }
 
   html, body {
@@ -76,25 +79,33 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow: visible;
+      overflow: hidden;
       background: white;
     }
 
-    /* Center the pedigree on the page */
-#pedigree-container {
-  width: 11in;
-  height: 8.5in;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  background: white;
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
-    svg {
-      width: 10.8in !important;
-      height: 8.3in !important;
+    #pedigree-container {
+      width: var(--print-container-width);
+      height: var(--print-container-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      padding: 0;
+      background: white;
+      overflow: hidden;
+    }
+
+    #pedigree-container svg {
+      width: var(--print-svg-width);
+      height: var(--print-svg-height);
+      max-width: var(--print-container-width);
+      max-height: var(--print-container-height);
+      display: block;
       transform: none !important;
       background: white !important;
       margin: 0 auto !important;
@@ -104,28 +115,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 11in;
-      height: 8.5in;
-    }
-
-    body.mobile-print #pedigree-container {
-      transform: scale(var(--mobile-print-scale, 1));
-      transform-origin: center center;
-    }
-
-    body.mobile-print svg {
-      width: 10.8in !important;
-      height: 8.3in !important;
-    }
-
-    #logo {
-      outline: 2px dashed red;
-    }
-
-    #pedigree-container svg {
-      width: 10.8in !important;
-      height: auto !important;
-      max-height: 8.3in !important;
+      width: 100%;
+      height: 100%;
     }
 
     #print-btn,
@@ -136,8 +127,8 @@
 
   @media print and (orientation: portrait) {
     body.mobile-landscape-device {
-      width: 8.5in;
-      height: 11in;
+      width: var(--print-container-height);
+      height: var(--print-container-width);
       overflow: visible;
     }
 
@@ -145,19 +136,19 @@
       position: fixed;
       top: 50%;
       left: 50%;
-      width: 11in;
-      height: 8.5in;
+      width: var(--print-container-width);
+      height: var(--print-container-height);
       transform: translate(-50%, -50%) rotate(90deg);
       transform-origin: center center;
       box-sizing: border-box;
-      overflow: visible;
+      overflow: hidden;
     }
 
     body.mobile-landscape-device #pedigree-container svg {
-      width: 10.5in !important;
-      max-width: 10.5in !important;
-      max-height: 8in !important;
-      height: auto !important;
+      width: var(--print-svg-width) !important;
+      height: var(--print-svg-height) !important;
+      max-width: var(--print-container-width) !important;
+      max-height: var(--print-container-height) !important;
     }
   }
 
