@@ -60,4 +60,56 @@ window.addEventListener('DOMContentLoaded', () => {
       el.textContent = joined;
     }
   });
+
+  const root = document.documentElement;
+
+  function isMobileViewport() {
+    return window.innerWidth <= 1024 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
+  function applyMobilePrintLayout() {
+    if (!isMobileViewport()) return;
+
+    document.body.classList.add('mobile-print');
+
+    const container = document.getElementById('pedigree-container');
+    if (!container) return;
+
+    requestAnimationFrame(() => {
+      const rect = container.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+
+      const targetWidth = 10.8 * 96;
+      const targetHeight = 8.3 * 96;
+      const scale = Math.min(targetWidth / rect.width, targetHeight / rect.height);
+
+      root.style.setProperty('--mobile-print-scale', String(scale));
+    });
+  }
+
+  function clearMobilePrintLayout() {
+    document.body.classList.remove('mobile-print');
+    root.style.removeProperty('--mobile-print-scale');
+  }
+
+  const printMediaQuery = window.matchMedia ? window.matchMedia('print') : null;
+
+  if (printMediaQuery) {
+    const handlePrintChange = (event) => {
+      if (event.matches) {
+        applyMobilePrintLayout();
+      } else {
+        clearMobilePrintLayout();
+      }
+    };
+
+    if (typeof printMediaQuery.addEventListener === 'function') {
+      printMediaQuery.addEventListener('change', handlePrintChange);
+    } else if (typeof printMediaQuery.addListener === 'function') {
+      printMediaQuery.addListener(handlePrintChange);
+    }
+  }
+
+  window.addEventListener('beforeprint', applyMobilePrintLayout);
+  window.addEventListener('afterprint', clearMobilePrintLayout);
 });
