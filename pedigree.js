@@ -63,29 +63,63 @@ window.addEventListener('DOMContentLoaded', () => {
     return window.innerWidth <= 1024 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
+  const PX_PER_INCH = 96;
+
+  function pxToInches(px) {
+    return `${(px / PX_PER_INCH).toFixed(4)}in`;
+  }
+
   function applyMobilePrintLayout() {
     if (!isMobileViewport()) return;
 
+    const svg = document.getElementById('pedigree-svg');
+    if (!svg) return;
+
     document.body.classList.add('mobile-print');
 
-    const container = document.getElementById('pedigree-container');
-    if (!container) return;
+    const portraitQuery = window.matchMedia && window.matchMedia('(orientation: portrait)');
+    if (portraitQuery && portraitQuery.matches) {
+      document.body.classList.add('mobile-landscape-device');
+    } else {
+      document.body.classList.remove('mobile-landscape-device');
+    }
 
     requestAnimationFrame(() => {
-      const rect = container.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
+      const targetWidth = 10.8 * PX_PER_INCH;
+      const targetHeight = 8.3 * PX_PER_INCH;
 
-      const targetWidth = 10.8 * 96;
-      const targetHeight = 8.3 * 96;
-      const scale = Math.min(targetWidth / rect.width, targetHeight / rect.height);
+      let aspectRatio = 1;
+      const viewBox = svg.viewBox && svg.viewBox.baseVal;
+      if (viewBox && viewBox.width && viewBox.height) {
+        aspectRatio = viewBox.width / viewBox.height;
+      } else {
+        const rect = svg.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        aspectRatio = rect.width / rect.height;
+      }
 
-      root.style.setProperty('--mobile-print-scale', String(scale));
+      let desiredWidth = targetWidth;
+      let desiredHeight = desiredWidth / aspectRatio;
+
+      if (desiredHeight > targetHeight) {
+        desiredHeight = targetHeight;
+        desiredWidth = desiredHeight * aspectRatio;
+      }
+
+      root.style.setProperty('--print-container-width', pxToInches(desiredWidth));
+      root.style.setProperty('--print-container-height', pxToInches(desiredHeight));
+      root.style.setProperty('--print-svg-width', pxToInches(desiredWidth));
+      root.style.setProperty('--print-svg-height', pxToInches(desiredHeight));
     });
   }
 
   function clearMobilePrintLayout() {
     document.body.classList.remove('mobile-print');
-    root.style.removeProperty('--mobile-print-scale');
+    document.body.classList.remove('mobile-landscape-device');
+    root.style.removeProperty('--print-container-width');
+    root.style.removeProperty('--print-container-height');
+    root.style.removeProperty('--print-svg-width');
+    root.style.removeProperty('--print-svg-height');
   }
 
   const printMediaQuery = window.matchMedia ? window.matchMedia('print') : null;
