@@ -35,11 +35,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-  if (isInSVG(el)) {
-  el.textContent = value;
-} else {
-  el.textContent = value;
-}
+    el.textContent = value;
   });
 
   // --- Handle chained fields (e.g. data-chain="name,breed,color") ---
