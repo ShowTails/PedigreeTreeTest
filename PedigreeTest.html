@@ -78,28 +78,41 @@ svg {
     }
 
     /* Center the pedigree on the page */
-#pedigree-container {
-  width: 11in;
-  height: 8.5in;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  background: white;
-}
+    #pedigree-container {
+      width: 11in;
+      height: 8.5in;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+      background: white;
+      overflow: hidden; /* Prevent second page generation */
+    }
 
-svg {
-  width: 10.8in !important;
-  height: 8.3in !important;
-  transform: none !important;
-  background: white !important;
-  margin: 0 auto !important;
-}
+    svg {
+      width: 10.8in !important;
+      height: 8.3in !important;
+      transform: none !important;
+      background: white !important;
+      margin: 0 auto !important;
+    }
+    
+    /* ADDED FIX: Force SVG content to display without unintended transforms in print */
+    #pedigree-container svg {
+      transform: scale(1) translate(0, 0) !important;
+      position: absolute !important; 
+      top: 0;
+      left: 0;
+    }
+    
+    #pedigree-container > * {
+      transform: none !important;
+    }
 
-#logo {
-  outline: 2px dashed red;
-}
+    #logo {
+      outline: 2px dashed red;
+    }
 
 
     #print-btn,
@@ -370,7 +383,6 @@ function getParam(name) {
   <text x="1380" y="135" text-anchor="left" data-field="ssdgc"></text>
   <text x="1160" y="155" text-anchor="left" class="label">DOB:</text>
   <text x="1200" y="155" text-anchor="left" data-field="ssddob"></text>
-
  
   <rect x="1150" y="170" width="200" height="90" class="box male"/>
   <text x="1160" y="190" text-anchor="left" class="name" data-chain="sdsrabbitry,sdsire"></text>
@@ -750,14 +762,12 @@ function enablePinchZoom() {
 
     if (!container || !inst) return;
 
-    // --- FIX START ---
-
     // 1. SAVE the current view state
     const savedState = { pan: inst.getPan(), zoom: inst.getZoom() };
 
-    // 2. APPLY the desired print state (matching the desktop fix)
+    // 2. APPLY the desired print state
     inst.resetZoom(); 
-    // UPDATED: Use the new scale/pan values
+    // Use the optimized scale/pan values
     inst.zoom(1.78); 
     inst.pan({ x: 100, y: 120 });
     
@@ -770,9 +780,7 @@ function enablePinchZoom() {
         inst.zoom(savedState.zoom);
         inst.pan(savedState.pan);
         
-        // --- FIX END ---
-        
-        // Also grab all styles from the main document
+        // Grab all styles from the main document
         const styleBlocks = Array.from(document.querySelectorAll('style'))
           .map(styleEl => styleEl.outerHTML)
           .join('\n');
@@ -782,7 +790,8 @@ function enablePinchZoom() {
           alert("Please allow pop-ups for ShowTails to print pedigrees.");
           return;
         }
-
+        
+        // Write the HTML for the print popup
         popup.document.write(`
           <html>
             <head>
@@ -801,16 +810,29 @@ function enablePinchZoom() {
                   align-items: center;
                   justify-content: center;
                 }
+                /* New container style to force print area and prevent second page */
+                #pedigree-container {
+                    width: 11in;
+                    height: 8.5in;
+                    margin: 0;
+                    padding: 0;
+                    display: block; 
+                    overflow: hidden; 
+                }
                 svg {
                   width: 10.8in !important;
                   height: 8.3in !important;
                   background: white !important;
                   margin: auto;
                   display: block;
+                  /* This style ensures the SVG itself scales to fill the print box */
+                  transform: scale(1) translate(0, 0) !important;
                 }
               </style>
             </head>
-            <body>${svgMarkup}</body>
+            <body>
+              <div id="pedigree-container">${svgMarkup}</div>
+            </body>
           </html>
         `);
         popup.document.close();
