@@ -35,11 +35,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-  if (isInSVG(el)) {
-  el.textContent = value;
-} else {
-  el.textContent = value;
-}
+    el.textContent = value;
   });
 
   // --- Handle chained fields (e.g. data-chain="name,breed,color") ---
@@ -60,4 +56,10 @@ window.addEventListener('DOMContentLoaded', () => {
       el.textContent = joined;
     }
   });
+
+  const mobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+
+  if (mobileUserAgent.test(navigator.userAgent)) {
+    document.body.classList.add('mobile-landscape-device');
+  }
 });
