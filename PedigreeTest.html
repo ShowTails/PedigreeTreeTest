@@ -821,60 +821,87 @@ function enablePinchZoom() {
     event.preventDefault();
 
     const container = document.getElementById("pedigree-container");
-    if (!container) return;
+    const inst = window.panZoomInstance;
 
-    // Grab the current SVG markup
-    const svgMarkup = container.innerHTML;
+    if (!container || !inst) return;
 
-    // Also grab all styles from the main document
-    const styleBlocks = Array.from(document.querySelectorAll('style'))
-      .map(styleEl => styleEl.outerHTML)
-      .join('\n');
+    // --- START OF FIX ---
 
-    const popup = window.open("", "_blank", "width=1200,height=800");
-    if (!popup) {
-      alert("Please allow pop-ups for ShowTails to print pedigrees.");
-      return;
-    }
+    // 1. SAVE the current view state
+    const savedState = { pan: inst.getPan(), zoom: inst.getZoom() };
 
-    popup.document.write(`
-      <html>
-        <head>
-          <title>Print Pedigree</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          ${styleBlocks}
-          <style>
-            @page { size: landscape; margin: 0; }
-            html, body {
-              width: 11in;
-              height: 8.5in;
-              margin: 0;
-              padding: 0;
-              background: white;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-            svg {
-              width: 10.8in !important;
-              height: 8.3in !important;
-              background: white !important;
-              margin: auto;
-              display: block;
-            }
-          </style>
-        </head>
-        <body>${svgMarkup}</body>
-      </html>
-    `);
-    popup.document.close();
+    // 2. APPLY the desired print state (same as desktop)
+    inst.resetZoom(); // Reset CTM to ensure a clean base
+    inst.center();
+    // Use the exact custom scale you've tested to be perfect for the page
+    inst.zoom(1.55);
+    inst.pan({ x: 60, y: 120 });
 
-    // Wait for the SVG to render, then open print dialog
-    setTimeout(() => {
-      popup.focus();
-      popup.print();
-      setTimeout(() => popup.close(), 1500);
-    }, 600);
+    // Give the panZoom library a moment to apply the transform to the DOM
+    // We use requestAnimationFrame to wait for the next render cycle.
+    requestAnimationFrame(() => {
+        // 3. RETRIEVE the *transformed* SVG markup
+        // The transform applied above is now in the SVG's internal <g> element
+        const svgMarkup = container.innerHTML;
+
+        // 4. RESTORE the original view state in the main window *immediately*
+        inst.zoom(savedState.zoom);
+        inst.pan(savedState.pan);
+
+        // --- END OF FIX ---
+
+        // Also grab all styles from the main document
+        const styleBlocks = Array.from(document.querySelectorAll('style'))
+          .map(styleEl => styleEl.outerHTML)
+          .join('\n');
+
+        const popup = window.open("", "_blank", "width=1200,height=800");
+        if (!popup) {
+          alert("Please allow pop-ups for ShowTails to print pedigrees.");
+          return;
+        }
+
+        popup.document.write(`
+          <html>
+            <head>
+              <title>Print Pedigree</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              ${styleBlocks}
+              <style>
+                @page { size: landscape; margin: 0; }
+                /* Ensure all CSS in the popup aligns with the landscape print media query */
+                html, body {
+                  width: 11in;
+                  height: 8.5in;
+                  margin: 0;
+                  padding: 0;
+                  background: white;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                }
+                svg {
+                  /* These dimensions are still necessary for the print view */
+                  width: 10.8in !important;
+                  height: 8.3in !important;
+                  background: white !important;
+                  margin: auto;
+                  display: block;
+                }
+              </style>
+            </head>
+            <body>${svgMarkup}</body>
+          </html>
+        `);
+        popup.document.close();
+
+        // Wait for the SVG to render, then open print dialog
+        setTimeout(() => {
+          popup.focus();
+          popup.print();
+          setTimeout(() => popup.close(), 1500);
+        }, 600);
+    }); // end requestAnimationFrame
   });
 })();
 </script>
