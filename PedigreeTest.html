@@ -710,8 +710,8 @@ function enablePinchZoom() {
     // Reset to full view, center, and apply perfect print scale
     inst.resetZoom();
     // UPDATED: Adjusted zoom/pan for better full-page fit
-    inst.zoom(1.45);
-    inst.pan({ x: 100, y: 120 });
+    inst.zoom(1.50);
+    inst.pan({ x: 80, y: 120 });
   }
 
   function restoreAfterPrint() {
@@ -745,7 +745,28 @@ function enablePinchZoom() {
 </script>
 
    
+
+
   <script>
+const params = new URLSearchParams(window.location.search);
+
+function setSvgImage(id, paramName) {
+  const url = params.get(paramName);
+  if (!url) return;
+  const decoded = decodeURIComponent(url);
+  const el = document.getElementById(id);
+  if (!el) return;
+  // Set both modern and legacy attributes for cross-browser support
+  el.setAttribute('href', decoded);
+  el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', decoded);
+}
+
+// Load logo and signature
+setSvgImage('logo', 'logo');
+setSvgImage('signature', 'signature');
+</script>
+
+<script>
       /* === Mobile Print (POPUP WINDOW FIX) === */
 (function() {
   const btn = document.getElementById("print-btn");
@@ -767,7 +788,7 @@ function enablePinchZoom() {
 
     // 2. APPLY the desired print state
     inst.resetZoom(); 
-    // Use the optimized scale/pan values
+    // Use the optimized scale/pan values (These values look correct for a landscape fit)
     inst.zoom(3.20); 
     inst.pan({ x: 15, y: 100 });
     
@@ -803,13 +824,13 @@ function enablePinchZoom() {
                 html, body {
                   width: 100%;
                   height: 100%;
-                  overflow: hidden;
                   margin: 0;
                   padding: 0;
                   background: white;
                   display: flex;
                   align-items: center;
                   justify-content: center;
+                  overflow: hidden; /* CRITICAL: Prevent the second page from being calculated */
                 }
                 /* New container style to force print area and prevent second page */
                 #pedigree-container {
@@ -848,27 +869,6 @@ function enablePinchZoom() {
   });
 })();
 </script>
-
-  <script>
-const params = new URLSearchParams(window.location.search);
-
-function setSvgImage(id, paramName) {
-  const url = params.get(paramName);
-  if (!url) return;
-  const decoded = decodeURIComponent(url);
-  const el = document.getElementById(id);
-  if (!el) return;
-  // Set both modern and legacy attributes for cross-browser support
-  el.setAttribute('href', decoded);
-  el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', decoded);
-}
-
-// Load logo and signature
-setSvgImage('logo', 'logo');
-setSvgImage('signature', 'signature');
-</script>
-
-
 
   <script>
 // === Glide-safe Clickable Pedigree Boxes ===
