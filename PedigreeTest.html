@@ -789,8 +789,8 @@ setSvgImage('signature', 'signature');
     // 2. APPLY the desired print state
     inst.resetZoom(); 
     // Use the optimized scale/pan values (These values look correct for a landscape fit)
-    inst.zoom(2.75); 
-    inst.pan({ x: 25, y: 100 });
+    inst.zoom(2.50); 
+    inst.pan({ x: 40, y: 100 });
     
     // Give the panZoom library a moment to apply the transform to the DOM
     requestAnimationFrame(() => {
@@ -817,7 +817,7 @@ setSvgImage('signature', 'signature');
           <html>
             <head>
               <title>Print Pedigree</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <meta name="viewport" content="width=device-width, initial-scale=1.25">
               ${styleBlocks}
               <style>
                 @page { size: landscape; margin: 0; }
@@ -831,12 +831,12 @@ setSvgImage('signature', 'signature');
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  overflow: hidden; /* CRITICAL: Prevent the second page from being calculated */
+  
                 }
                 /* New container style to force print area and prevent second page */
                 #pedigree-container {
-                    width: 11in;
-                    height: 8.5in;
+                    width: 10.8in;
+                    height: 8.3in;
                     margin: 0;
                     padding: 0;
                     display: block; 
@@ -849,7 +849,7 @@ setSvgImage('signature', 'signature');
                   margin: auto;
                   display: block;
                   /* This style ensures the SVG itself scales to fill the print box */
-                  transform: scale(1) translate(0, 0) !important;
+                  transform: scale(1.25) translate(0, 0) !important;
                 }
               </style>
             </head>
