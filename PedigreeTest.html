@@ -126,6 +126,13 @@ svg {
       transform: none !important;
     }
 
+    /* NEW: Hide the SVG-based credit text when printing on desktop/general print, 
+      so it doesn't conflict with the HTML footer. 
+    */
+    #pedigree-svg text[x="795"][y="1080"] {
+        display: none !important;
+    }
+
     #pedigree-footer {
       position: fixed;
       bottom: 8px;
@@ -133,6 +140,8 @@ svg {
       transform: translateX(-50%);
       font-size: 11px;
       background: white;
+      /* NEW: Ensure the HTML footer is shown during print */
+      display: block !important; 
     }
 
     #logo {
@@ -143,6 +152,26 @@ svg {
     #print-btn,
     #reset-view-btn {
       display: none !important;
+    }
+  }
+
+  /* NEW MEDIA QUERY: Targets mobile/tablet screens in print mode.
+    This ensures the HTML footer takes precedence and hides the SVG text footer, 
+    which is often the source of unwanted text/footers in mobile printing.
+  */
+  @media screen and (max-width: 768px) and print {
+    /* Hide the SVG text footer on mobile print */
+    #pedigree-svg text[x="795"][y="1080"] {
+        display: none !important;
+    }
+    
+    /* Ensure the HTML footer is displayed and readable on mobile print */
+    #pedigree-footer {
+        display: block !important;
+        position: fixed; /* Keep fixed to be relative to page */
+        font-size: 8pt !important; 
+        bottom: 5px !important;
+        padding: 1px 4px;
     }
   }
 
