@@ -78,7 +78,8 @@ svg {
 
   @page {
     size: 11in 8.5in landscape;
-    margin: 0;
+    /* Leave room for browser-controlled headers/footers (esp. on mobile) */
+    margin: 0.35in 0.4in 0.7in 0.4in;
   }
 
   @media print {
@@ -93,25 +94,26 @@ svg {
 
     /* Center the pedigree on the page */
     #pedigree-container {
-      width: 11in;
-      height: 8.5in;
+      width: calc(11in - 0.8in);
+      height: calc(8.5in - 1.05in);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0;
+      margin: 0 auto;
       padding: 0;
       background: white;
       overflow: hidden; /* Prevent second page generation */
     }
 
     svg {
-      width: 10.8in !important;
-      height: 8.3in !important;
+      width: 100% !important;
+      height: 100% !important;
       transform: none !important;
       background: white !important;
       margin: 0 auto !important;
       border: 6px double #000 !important;
       box-sizing: border-box !important;
+      padding-bottom: 0.2in;
     }
     
     /* ADDED FIX: Force SVG content to display without unintended transforms in print */
@@ -135,13 +137,13 @@ svg {
 
     #pedigree-footer {
       position: fixed;
-      bottom: 8px;
+      bottom: 18px;
       left: 50%;
       transform: translateX(-50%);
       font-size: 11px;
       background: white;
       /* NEW: Ensure the HTML footer is shown during print */
-      display: block !important; 
+      display: block !important;
     }
 
     #logo {
@@ -169,8 +171,8 @@ svg {
     #pedigree-footer {
         display: block !important;
         position: fixed; /* Keep fixed to be relative to page */
-        font-size: 8pt !important; 
-        bottom: 5px !important;
+        font-size: 8pt !important;
+        bottom: 14px !important;
         padding: 1px 4px;
     }
   }
