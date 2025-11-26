@@ -43,9 +43,7 @@ svg {
 
 #background-image {
   pointer-events: none;
-  /* Hidden by default; revealed with gentle opacity when a background URL is supplied */
-  opacity: 0;
-  transition: opacity 0.25s ease;
+
 }
 
 
@@ -167,7 +165,7 @@ function getParam(name) {
   x="-125"
   y="-300"
   width="1800"
-  height="1700"
+  height="2000"
   preserveAspectRatio="xMidYMid meet"
 />
 
@@ -815,12 +813,6 @@ function setSvgImage(id, paramName) {
   el.setAttribute('href', decoded);
   el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', decoded);
 
-  // If we're wiring the background image, gently show it once a URL exists
-  if (id === 'background-image') {
-    // Inline style wins over the stylesheet default that keeps it hidden
-    el.setAttribute('opacity', '0.12');
-    el.style.opacity = '0.12';
-  }
 }
 
 // Load logo and signature
