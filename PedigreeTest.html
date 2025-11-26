@@ -160,15 +160,15 @@ function getParam(name) {
 <body>
 
   <div id="pedigree-container">
-<svg id="pedigree-svg" viewBox="-80 -120 1750 1450" preserveAspectRatio="xMidYMid meet">
+<svg id="pedigree-svg" viewBox="-120 -160 1920 1520" preserveAspectRatio="xMidYMid meet">
 
 <image
   id="background-image"
-  x="-80"
-  y="-120"
-  width="1750"
-  height="1450"
-  preserveAspectRatio="xMidYMid meet"
+  x="-120"
+  y="-160"
+  width="1920"
+  height="1520"
+  preserveAspectRatio="xMidYMid slice"
   opacity="0"
 />
 
@@ -570,22 +570,33 @@ function getParam(name) {
   let panZoom = null;
   let initialized = false;
 
-  function fitToContainer() {
-    if (!panZoom) return;
+  function computeFit() {
     const vb = svg.viewBox.baseVal;
-    if (!validBox(vb)) return;
+    if (!validBox(vb)) return null;
+
     const cw = container.clientWidth;
     const ch = container.clientHeight;
-    if (!cw || !ch) return;
+    if (!cw || !ch) return null;
 
     const scale = Math.min(cw / vb.width, ch / vb.height);
-    if (isFinite(scale) && scale > 0) {
-      panZoom.zoom(scale);
-      panZoom.pan({
+    if (!isFinite(scale) || scale <= 0) return null;
+
+    return {
+      scale,
+      pan: {
         x: (cw - vb.width * scale) / 2,
         y: (ch - vb.height * scale) / 2
-      });
-    }
+      }
+    };
+  }
+
+  function fitToContainer() {
+    if (!panZoom) return;
+    const fit = computeFit();
+    if (!fit) return;
+
+    panZoom.zoom(fit.scale);
+    panZoom.pan(fit.pan);
   }
 
   function tryInit() {
@@ -743,9 +754,17 @@ function enablePinchZoom() {
 
     // Reset to full view, center, and apply perfect print scale
     inst.resetZoom();
-    // UPDATED: Adjusted zoom/pan for better full-page fit
-    inst.zoom(1.50);
-    inst.pan({ x: 50, y: 120 });
+
+    const fit = computeFit();
+    if (fit) {
+      // Slightly overscale to let the background bleed to the page edges
+      const printScale = fit.scale * 1.03;
+      inst.zoom(printScale);
+      inst.pan({
+        x: fit.pan.x,
+        y: fit.pan.y
+      });
+    }
   }
 
   function restoreAfterPrint() {
