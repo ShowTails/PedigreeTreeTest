@@ -590,6 +590,9 @@ function getParam(name) {
     };
   }
 
+  // Expose so other scripts (e.g., print helpers) can reuse the exact fit math
+  window.computeFit = computeFit;
+
   function fitToContainer() {
     if (!panZoom) return;
     const fit = computeFit();
@@ -755,7 +758,7 @@ function enablePinchZoom() {
     // Reset to full view, center, and apply perfect print scale
     inst.resetZoom();
 
-    const fit = computeFit();
+    const fit = typeof window.computeFit === "function" ? window.computeFit() : null;
     if (fit) {
       // Fit exactly so the full background stays in frame
       const printScale = fit.scale;
