@@ -741,7 +741,7 @@ function enablePinchZoom() {
   
 
 <script>
-  /* === Guaranteed centered & scaled printing using active zoom (DESKTOP) === */
+  /* === Guaranteed centered & scaled printing using active zoom === */
 (() => {
   const btn = document.getElementById("print-btn");
 
@@ -754,17 +754,9 @@ function enablePinchZoom() {
 
     // Reset to full view, center, and apply perfect print scale
     inst.resetZoom();
-
-    const fit = typeof window.computeFit === "function" ? window.computeFit() : null;
-    if (fit) {
-      // Fit exactly so the full background stays in frame
-      const printScale = fit.scale;
-      inst.zoom(printScale);
-      inst.pan({
-        x: fit.pan.x,
-        y: fit.pan.y
-      });
-    }
+    inst.center();
+    inst.zoom(1.55);
+    inst.pan({ x: 60, y: 120 });
   }
 
   function restoreAfterPrint() {
@@ -782,10 +774,6 @@ function enablePinchZoom() {
 
   // Button click handler
   btn.addEventListener("click", () => {
-    // Only run this default behavior on non-mobile (mobile handled in the next script block)
-    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (isMobile) return; 
-
     resetForPrint();
     requestAnimationFrame(() => {
       setTimeout(() => {
@@ -795,7 +783,6 @@ function enablePinchZoom() {
     });
   });
 })();
-</script>
 
    
 
