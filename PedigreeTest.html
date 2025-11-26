@@ -45,6 +45,7 @@ svg {
   pointer-events: none;
   /* Hidden by default; revealed with gentle opacity when a background URL is supplied */
   opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 
@@ -795,7 +796,9 @@ function setSvgImage(id, paramName) {
 
   // If we're wiring the background image, gently show it once a URL exists
   if (id === 'background-image') {
+    // Inline style wins over the stylesheet default that keeps it hidden
     el.setAttribute('opacity', '0.12');
+    el.style.opacity = '0.12';
   }
 }
 
