@@ -95,8 +95,8 @@ svg {
       width: 100vw;
       height: 100vh;
       display: flex;
-      align-items: stretch;
-      justify-content: stretch;
+      align-items: center;
+      justify-content: center;
       margin: 0;
       padding: 0;
       background: white;
@@ -164,11 +164,11 @@ function getParam(name) {
 
 <image
   id="background-image"
-  x="-300"
-  y="-320"
-  width="2520"
-  height="1950"
-  preserveAspectRatio="xMidYMid slice"
+  x="-120"
+  y="-160"
+  width="1920"
+  height="1520"
+  preserveAspectRatio="xMidYMid meet"
   opacity="0"
 />
 
@@ -757,8 +757,8 @@ function enablePinchZoom() {
 
     const fit = computeFit();
     if (fit) {
-      // Slightly overscale to let the background bleed to the page edges
-      const printScale = fit.scale * 1.03;
+      // Fit exactly so the full background stays in frame
+      const printScale = fit.scale;
       inst.zoom(printScale);
       inst.pan({
         x: fit.pan.x,
@@ -900,8 +900,10 @@ setSvgImage('background-image', 'background-image');
                     height: 7.75in;
                     margin: 0;
                     padding: 0;
-                    display: block; 
-                    overflow: hidden; 
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
                 }
                 svg {
                   width: 10.8in !important;
@@ -909,8 +911,8 @@ setSvgImage('background-image', 'background-image');
                   background: white !important;
                   margin: auto;
                   display: block;
-                  /* This style ensures the SVG itself scales to fill the print box */
-                  transform: scale(1.25) translate(0, 0) !important;
+                  /* Keep the full background visible and centered */
+                  transform: none !important;
                 }
               </style>
             </head>
