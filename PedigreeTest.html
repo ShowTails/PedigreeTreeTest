@@ -807,82 +807,55 @@ setSvgImage('signature', 'signature');
 setSvgImage('background-image', 'background-image');
 </script>
 
-  <script>
-/* === Mobile Print WITH matching desktop zoom/pan logic === */
-(function() {
+<script>
+/* ============================
+   MOBILE PRINT WITH TRUE PAN/Z0OM CONTROL
+   ============================ */
+(function () {
   const btn = document.getElementById("print-btn");
   if (!btn) return;
 
-  btn.addEventListener("click", (event) => {
-    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (!isMobile) return;
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
-    event.preventDefault();
+  btn.addEventListener("click", (e) => {
+    if (!isMobile) return;   // desktop uses the main logic
+    e.preventDefault();
 
-    const container = document.getElementById("pedigree-container");
-    const svgEl = document.getElementById("pedigree-svg");
-    if (!container || !svgEl) return;
-
-    const svgMarkup = container.innerHTML;
-
-    const styleBlocks = Array.from(document.querySelectorAll("style"))
-      .map(s => s.outerHTML)
-      .join("\n");
-
-    const popup = window.open("", "_blank", "width=1200,height=800");
-    if (!popup) {
-      alert("Please allow pop-ups for ShowTails.");
+    const inst = window.panZoomInstance;
+    if (!inst) {
+      console.error("panZoomInstance missing.");
+      window.print();
       return;
     }
 
-    popup.document.write(`
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        ${styleBlocks}
-        <style>
-          @page { size: landscape; margin: 0; }
-          html, body {
-            margin:0; padding:0;
-            width:100%; height:100%;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background:white;
-          }
-          #wrapper { display:flex; }
-        </style>
-      </head>
-      <body>
-        <div id="wrapper">${svgMarkup}</div>
-      </body>
-      </html>
-    `);
-
-    popup.document.close();
-
-    // Apply desktop-like pan/zoom logic inside the popup
-    function applyMobilePrintTransform(svg) {
-      const printScale = 1.45;   // same as desktop
-      const printPanX = 60;
-      const printPanY = 125;
-
-      svg.style.transformOrigin = "0 0";
-      svg.style.transform =
-        `translate(${printPanX}px, ${printPanY}px) scale(${printScale})`;
-    }
-
-    popup.onload = () => {
-      const printedSvg = popup.document.querySelector("svg");
-      if (!printedSvg) return;
-
-      applyMobilePrintTransform(printedSvg);
-
-      setTimeout(() => {
-        popup.print();
-        setTimeout(() => popup.close(), 1500);
-      }, 600);
+    /* Save user’s zoom + pan */
+    const saved = {
+      zoom: inst.getZoom(),
+      pan: inst.getPan()
     };
+    window._mobileSaved = saved;
+
+    /* === Apply PRINT positioning here (just like desktop) === */
+    inst.resetZoom();
+    inst.center();
+
+    // ⭐ Adjust these 3 values until the print preview is perfect
+    inst.zoom(1.45);              // scale factor for mobile
+    inst.pan({ x: 60, y: 120 });  // position correction for mobile
+
+    /* Wait for transforms to apply before opening print */
+    setTimeout(() => {
+      window.print();
+
+      /* Restore after printing */
+      setTimeout(() => {
+        const restore = window._mobileSaved;
+        if (restore) {
+          inst.zoom(restore.zoom);
+          inst.pan(restore.pan);
+        }
+      }, 600);
+    }, 300);
   });
 })();
 </script>
