@@ -818,106 +818,113 @@ setSvgImage('background-image', 'background-image');
 
   btn.addEventListener("click", (event) => {
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (!isMobile) return; // only affects mobile
+    if (!isMobile) return;
 
     event.preventDefault();
 
     const container = document.getElementById("pedigree-container");
+    const svg = document.getElementById("pedigree-svg");
     const inst = window.panZoomInstance;
+    if (!container || !svg || !inst) return;
 
-    if (!container || !inst) return;
-
-    // 1. SAVE the current view state
+    // Save state
     const savedState = { pan: inst.getPan(), zoom: inst.getZoom() };
 
-    // 2. APPLY the desired print state
-    inst.resetZoom(); 
-    // Use the optimized scale/pan values (These values look correct for a landscape fit)
-    inst.zoom(2.6); 
-    inst.pan({ x: 50, y: 100 });
-    
-    // Give the panZoom library a moment to apply the transform to the DOM
-    requestAnimationFrame(() => {
-        // 3. RETRIEVE the *transformed* SVG markup
-        const svgMarkup = container.innerHTML;
+    // Reset for print
+    inst.resetZoom();
+    inst.center();
+    inst.zoom(1);
 
-        // 4. RESTORE the original view state in the main window *immediately*
-        inst.zoom(savedState.zoom);
-        inst.pan(savedState.pan);
-        
-        // Grab all styles from the main document
-        const styleBlocks = Array.from(document.querySelectorAll('style'))
-          .map(styleEl => styleEl.outerHTML)
-          .join('\n');
+    // 🔥 Read original viewBox
+    const vb = svg.viewBox.baseVal;
+    const orig = { x: vb.x, y: vb.y, w: vb.width, h: vb.height };
 
-        const popup = window.open("", "_blank", "width=1200,height=800");
-        if (!popup) {
-          alert("Please allow pop-ups for ShowTails to print pedigrees.");
-          return;
-        }
-        
-        // Write the HTML for the print popup
+    // 🔥 Expand viewBox to better fit 11x8.5 landscape page
+    const pageRatio = 11 / 8.5;      // 1.294
+    const svgRatio = orig.w / orig.h;
+
+    let newW = orig.w;
+    let newH = orig.h;
+
+    if (svgRatio < pageRatio) {
+      // SVG is too tall → expand width
+      newW = orig.h * pageRatio;
+    } else {
+      // SVG is too wide → expand height
+      newH = orig.w / pageRatio;
+    }
+
+    // Center the expansion
+    const expandX = (newW - orig.w) / 2;
+    const expandY = (newH - orig.h) / 2;
+
+    const expandedViewBox =
+      `${orig.x - expandX} ${orig.y - expandY} ${newW} ${newH}`;
+
+    // Apply expanded viewBox to PRINT-ONLY copy
+    const svgClone = svg.cloneNode(true);
+    svgClone.setAttribute("viewBox", expandedViewBox);
+
+    // Restore user view immediately
+    inst.zoom(savedState.zoom);
+    inst.pan(savedState.pan);
+
+    const styles = Array.from(document.querySelectorAll("style"))
+      .map(s => s.outerHTML)
+      .join("\n");
+
+    const popup = window.open("", "_blank");
     popup.document.write(`
-  <html>
-    <head>
-      <title>Print Pedigree</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.25">
-      ${styleBlocks}
-    <style>
-  @page { size: landscape; margin: 0; }
+      <html>
+      <head>
+        <title>Print Pedigree</title>
+        ${styles}
+        <style>
+          @page { size: landscape; margin: 0; }
+          html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            overflow: hidden;
+          }
+          #print-wrap {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+          }
+          svg {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            background: white !important;
+          }
+        </style>
+      </head>
+      <body>
+        <div id="print-wrap">
+          ${svgClone.outerHTML}
+        </div>
+      </body>
+      </html>
+    `);
+    popup.document.close();
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: white;
-  }
-
-  /* Hard frame that matches the print area */
-  #pedigree-container {
-    position: absolute;
-    inset: 0;                    /* shorthand for top/left/right/bottom = 0 */
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: white;
-
-    display: flex;
-    align-items: center;         /* vertical center */
-    justify-content: center;     /* horizontal center */
-  }
-
-  /* Auto-scale SVG using the same logic as desktop */
-  svg {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto !important;
-    height: auto !important;
-
-    display: block;
-    background: white !important;
-    transform: none !important;
-  }
-</style>
- </head>
-    <body>
-      <div id="pedigree-container">${svgMarkup}</div>
-    </body>
-  </html>
-`);
-        popup.document.close();
-
-        // Wait for the SVG to render, then open print dialog
-        setTimeout(() => {
-          popup.focus();
-          popup.print();
-          setTimeout(() => popup.close(), 1500);
-        }, 600);
-    });
+    setTimeout(() => {
+      popup.print();
+      popup.close();
+    }, 500);
   });
 })();
+
 </script>
 
   <script>
