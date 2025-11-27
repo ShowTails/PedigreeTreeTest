@@ -10,8 +10,8 @@
   html, body {
     margin: 0;
     padding: 0;
-    width: 11in;
-    height: 8.5in;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
     background: white;
   }
@@ -39,6 +39,7 @@ svg {
   page-break-inside: avoid !important;
     touch-action: none !important;
   -ms-touch-action: none !important;
+  border: double 3px #000;
   box-sizing: border-box;
 }
 
@@ -70,7 +71,7 @@ svg {
   .title { font-weight: bold; font-size: 20px; }
 
   .credit {
-    font-size: 14px;
+    font-size: 12px;
     fill: #000;
   }
 
@@ -108,6 +109,7 @@ svg {
       transform: none !important;
       background: white !important;
       margin: 0 !important;
+      border: double 3px #000 !important;
       box-sizing: border-box !important;
       padding: 0 !important;
     }
@@ -786,6 +788,9 @@ function enablePinchZoom() {
 
 </script>
 
+   
+
+
   <script>
 const params = new URLSearchParams(window.location.search);
 
@@ -808,75 +813,111 @@ setSvgImage('background-image', 'background-image');
 </script>
 
 <script>
-/* ==========================================
-   MOBILE PRINT — FORCE DEFAULT ZOOM/PAN
-   ========================================== */
-(function () {
+      /* === Mobile Print (POPUP WINDOW FIX) === */
+(function() {
   const btn = document.getElementById("print-btn");
   if (!btn) return;
 
-  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  btn.addEventListener("click", (event) => {
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (!isMobile) return; // only affects mobile
 
-  btn.addEventListener("click", (e) => {
-    if (!isMobile) return; 
-    e.preventDefault();
+    event.preventDefault();
 
+    const container = document.getElementById("pedigree-container");
     const inst = window.panZoomInstance;
-    const svg = document.getElementById("pedigree-svg");
 
-    if (!svg) return;
+    if (!container || !inst) return;
 
-    /* Save user state but DO NOT use it for printing */
-    let saved = null;
-    if (inst) {
-      saved = {
-        zoom: inst.getZoom(),
-        pan: inst.getPan(),
-      };
-    }
+    // 1. SAVE the current view state
+    const savedState = { pan: inst.getPan(), zoom: inst.getZoom() };
 
-    /* ----------------------------------------------
-       🎯 1. CLEAR ALL PAN/ZOOM TRANSFORMS FOR PRINT
-       ---------------------------------------------- */
-    if (inst) inst.disableZoom();
-    if (inst) inst.disablePan();
+    // 2. APPLY the desired print state
+    inst.resetZoom(); 
+    // Use the optimized scale/pan values (These values look correct for a landscape fit)
+    inst.zoom(2.75); 
+    inst.pan({ x: 50, y: 100 });
+    
+    // Give the panZoom library a moment to apply the transform to the DOM
+    requestAnimationFrame(() => {
+        // 3. RETRIEVE the *transformed* SVG markup
+        const svgMarkup = container.innerHTML;
 
-    svg.removeAttribute("transform");
-    svg.style.transform = "none";
+        // 4. RESTORE the original view state in the main window *immediately*
+        inst.zoom(savedState.zoom);
+        inst.pan(savedState.pan);
+        
+        // Grab all styles from the main document
+        const styleBlocks = Array.from(document.querySelectorAll('style'))
+          .map(styleEl => styleEl.outerHTML)
+          .join('\n');
 
-    /* ----------------------------------------------
-       🎯 2. APPLY YOUR PRINT DEFAULTS
-       ---------------------------------------------- */
-    if (inst) {
-      inst.resetZoom();
-      inst.center();
-      inst.zoom(1.45);         // ← your correct print zoom
-      inst.pan({ x: 60, y: 120 });   // ← your correct print pan
-    }
-
-    /* ----------------------------------------------
-       🎯 3. WAIT 300ms so iOS Safari applies layout
-       ---------------------------------------------- */
-    setTimeout(() => {
-      window.print();
-
-      /* Restore user state AFTER print */
-      setTimeout(() => {
-        if (inst && saved) {
-          inst.enableZoom();
-          inst.enablePan();
-          inst.zoom(saved.zoom);
-          inst.pan(saved.pan);
+        const popup = window.open("", "_blank", "width=1200,height=800");
+        if (!popup) {
+          alert("Please allow pop-ups for ShowTails to print pedigrees.");
+          return;
         }
-      }, 600);
+        
+        // Write the HTML for the print popup
+        popup.document.write(`
+          <html>
+            <head>
+              <title>Print Pedigree</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1.25">
+              ${styleBlocks}
+              <style>
+                @page { size: landscape; margin: 0; }
+                html, body {
+                  width: 10.5in;
+                  height: 8in;
+                  overflow: hidden;
+                  margin: 0;
+                  padding: 0;
+                  background: white;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+  
+                }
+                /* New container style to force print area and prevent second page */
+                #pedigree-container {
+                    width: 10.5in;
+                    height: 8in;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
+                }
+                svg {
+                  width: 11in !important;
+                  height: 8.5in !important;
+                  background: white !important;
+                  margin: 0;
+                  display: block;
+                  /* Keep the full background visible and centered */
+                  transform: none !important;
+                }
+              </style>
+            </head>
+            <body>
+              <div id="pedigree-container">${svgMarkup}</div>
+            </body>
+          </html>
+        `);
+        popup.document.close();
 
-    }, 350);
+        // Wait for the SVG to render, then open print dialog
+        setTimeout(() => {
+          popup.focus();
+          popup.print();
+          setTimeout(() => popup.close(), 1500);
+        }, 600);
+    });
   });
 })();
 </script>
-
-
-
 
   <script>
 // === Glide-safe Clickable Pedigree Boxes ===
