@@ -822,63 +822,60 @@ setSvgImage('background-image', 'background-image');
 
     event.preventDefault();
 
-    const container = document.getElementById("pedigree-container");
     const svg = document.getElementById("pedigree-svg");
     const inst = window.panZoomInstance;
-    if (!container || !svg || !inst) return;
+    if (!svg || !inst) return;
 
     // Save state
     const savedState = { pan: inst.getPan(), zoom: inst.getZoom() };
 
-    // Reset for print
+    // Reset to full view before capturing
     inst.resetZoom();
     inst.center();
     inst.zoom(1);
 
-    // 🔥 Read original viewBox
+    // Read original viewBox
     const vb = svg.viewBox.baseVal;
     const orig = { x: vb.x, y: vb.y, w: vb.width, h: vb.height };
 
-    // 🔥 Expand viewBox to better fit 11x8.5 landscape page
-    const pageRatio = 11 / 8.5;      // 1.294
+    // Fit viewBox ratio to printable landscape
+    const pageRatio = 11 / 8.5;
     const svgRatio = orig.w / orig.h;
 
     let newW = orig.w;
     let newH = orig.h;
 
-    if (svgRatio < pageRatio) {
-      // SVG is too tall → expand width
-      newW = orig.h * pageRatio;
-    } else {
-      // SVG is too wide → expand height
-      newH = orig.w / pageRatio;
-    }
+    if (svgRatio < pageRatio) newW = orig.h * pageRatio;
+    else newH = orig.w / pageRatio;
 
-    // Center the expansion
     const expandX = (newW - orig.w) / 2;
     const expandY = (newH - orig.h) / 2;
 
     const expandedViewBox =
       `${orig.x - expandX} ${orig.y - expandY} ${newW} ${newH}`;
 
-    // Apply expanded viewBox to PRINT-ONLY copy
+    // Clone manually so we can inject namespaces
     const svgClone = svg.cloneNode(true);
     svgClone.setAttribute("viewBox", expandedViewBox);
+    svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgClone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
-    // Restore user view immediately
+    // Serialize SVG to string
+    const svgMarkup = new XMLSerializer().serializeToString(svgClone);
+
+    // Restore screen view immediately
     inst.zoom(savedState.zoom);
     inst.pan(savedState.pan);
 
-    const styles = Array.from(document.querySelectorAll("style"))
-      .map(s => s.outerHTML)
+    const styleBlocks = Array.from(document.querySelectorAll("style"))
+      .map((s) => s.outerHTML)
       .join("\n");
 
     const popup = window.open("", "_blank");
     popup.document.write(`
       <html>
       <head>
-        <title>Print Pedigree</title>
-        ${styles}
+        ${styleBlocks}
         <style>
           @page { size: landscape; margin: 0; }
           html, body {
@@ -887,12 +884,11 @@ setSvgImage('background-image', 'background-image');
             margin: 0;
             padding: 0;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             background: white;
-            overflow: hidden;
           }
-          #print-wrap {
+          #wrap {
             width: 100%;
             height: 100%;
             display: flex;
@@ -901,18 +897,13 @@ setSvgImage('background-image', 'background-image');
             overflow: hidden;
           }
           svg {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            background: white !important;
+            width: 100%;
+            height: 100%;
           }
         </style>
       </head>
       <body>
-        <div id="print-wrap">
-          ${svgClone.outerHTML}
-        </div>
+        <div id="wrap">${svgMarkup}</div>
       </body>
       </html>
     `);
@@ -921,7 +912,7 @@ setSvgImage('background-image', 'background-image');
     setTimeout(() => {
       popup.print();
       popup.close();
-    }, 500);
+    }, 600);
   });
 })();
 
