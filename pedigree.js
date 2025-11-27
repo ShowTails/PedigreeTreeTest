@@ -73,7 +73,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!isMobileViewport()) return;
 
     const svg = document.getElementById('pedigree-svg');
-    if (!svg) return;
+    const container = document.getElementById('pedigree-container');
+    if (!svg || !container) return;
 
     document.body.classList.add('mobile-print');
 
@@ -110,6 +111,21 @@ window.addEventListener('DOMContentLoaded', () => {
       root.style.setProperty('--print-container-height', pxToInches(desiredHeight));
       root.style.setProperty('--print-svg-width', pxToInches(desiredWidth));
       root.style.setProperty('--print-svg-height', pxToInches(desiredHeight));
+
+      // Set explicit inline sizes so mobile print preview always has dimensions
+      if (!container.dataset.prevWidth) {
+        container.dataset.prevWidth = container.style.width;
+        container.dataset.prevHeight = container.style.height;
+      }
+      container.style.width = pxToInches(desiredWidth);
+      container.style.height = pxToInches(desiredHeight);
+
+      if (!svg.dataset.prevWidth) {
+        svg.dataset.prevWidth = svg.style.width;
+        svg.dataset.prevHeight = svg.style.height;
+      }
+      svg.style.width = pxToInches(desiredWidth);
+      svg.style.height = pxToInches(desiredHeight);
     });
   }
 
@@ -120,6 +136,21 @@ window.addEventListener('DOMContentLoaded', () => {
     root.style.removeProperty('--print-container-height');
     root.style.removeProperty('--print-svg-width');
     root.style.removeProperty('--print-svg-height');
+
+    const container = document.getElementById('pedigree-container');
+    const svg = document.getElementById('pedigree-svg');
+    if (container) {
+      container.style.width = container.dataset.prevWidth || '';
+      container.style.height = container.dataset.prevHeight || '';
+      delete container.dataset.prevWidth;
+      delete container.dataset.prevHeight;
+    }
+    if (svg) {
+      svg.style.width = svg.dataset.prevWidth || '';
+      svg.style.height = svg.dataset.prevHeight || '';
+      delete svg.dataset.prevWidth;
+      delete svg.dataset.prevHeight;
+    }
   }
 
   const printMediaQuery = window.matchMedia ? window.matchMedia('print') : null;
