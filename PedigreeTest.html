@@ -755,7 +755,7 @@ function enablePinchZoom() {
     // Reset to full view, center, and apply perfect print scale
     inst.resetZoom();
     inst.center();
-    inst.zoom(1.55);
+    inst.zoom(1.45);
     inst.pan({ x: 60, y: 125 });
   }
 
@@ -826,44 +826,41 @@ setSvgImage('background-image', 'background-image');
     const inst = window.panZoomInstance;
     if (!svg || !inst) return;
 
-    // Save state
+    // Save current state
     const savedState = { pan: inst.getPan(), zoom: inst.getZoom() };
 
-    // Reset to full view before capturing
+    // Reset for capture
     inst.resetZoom();
     inst.center();
     inst.zoom(1);
 
-    // Read original viewBox
-    const vb = svg.viewBox.baseVal;
-    const orig = { x: vb.x, y: vb.y, w: vb.width, h: vb.height };
-
-    // Fit viewBox ratio to printable landscape
-    const pageRatio = 11 / 8.5;
-    const svgRatio = orig.w / orig.h;
-
-    let newW = orig.w;
-    let newH = orig.h;
-
-    if (svgRatio < pageRatio) newW = orig.h * pageRatio;
-    else newH = orig.w / pageRatio;
-
-    const expandX = (newW - orig.w) / 2;
-    const expandY = (newH - orig.h) / 2;
-
-    const expandedViewBox =
-      `${orig.x - expandX} ${orig.y - expandY} ${newW} ${newH}`;
-
-    // Clone manually so we can inject namespaces
+    // Clone with proper namespaces
     const svgClone = svg.cloneNode(true);
-    svgClone.setAttribute("viewBox", expandedViewBox);
     svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     svgClone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
-    // Serialize SVG to string
+    // Expand viewBox to fit page
+    const vb = svg.viewBox.baseVal;
+    const pageRatio = 11 / 8.5;
+    const svgRatio = vb.width / vb.height;
+
+    let newW = vb.width;
+    let newH = vb.height;
+
+    if (svgRatio < pageRatio) newW = vb.height * pageRatio;
+    else newH = vb.width / pageRatio;
+
+    const expandX = (newW - vb.width) / 2;
+    const expandY = (newH - vb.height) / 2;
+
+    svgClone.setAttribute(
+      "viewBox",
+      `${vb.x - expandX} ${vb.y - expandY} ${newW} ${newH}`
+    );
+
     const svgMarkup = new XMLSerializer().serializeToString(svgClone);
 
-    // Restore screen view immediately
+    // Restore screen view
     inst.zoom(savedState.zoom);
     inst.pan(savedState.pan);
 
@@ -871,48 +868,81 @@ setSvgImage('background-image', 'background-image');
       .map((s) => s.outerHTML)
       .join("\n");
 
-    const popup = window.open("", "_blank");
+    const popup = window.open("", "_blank", "width=1200,height=800");
+
     popup.document.write(`
       <html>
-      <head>
-        ${styleBlocks}
-        <style>
-          @page { size: landscape; margin: 0; }
-          html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: white;
-          }
-          #wrap {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-          }
-          svg {
-            width: 100%;
-            height: 100%;
-          }
-        </style>
-      </head>
-      <body>
-        <div id="wrap">${svgMarkup}</div>
-      </body>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          ${styleBlocks}
+          <style>
+            @page { size: landscape; margin: 0; }
+            html, body {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
+              background: white;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+            #wrap {
+              width: 100%;
+              height: 100%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              overflow: hidden;
+            }
+            svg {
+              width: 100%;
+              height: 100%;
+            }
+          </style>
+        </head>
+        <body>
+          <div id="wrap">${svgMarkup}</div>
+        </body>
       </html>
     `);
     popup.document.close();
 
-    setTimeout(() => {
+    /**  
+     * 🚀 SAFARI FIX: Ensure rendering before print  
+     * iOS won’t print SVG until the DOM is fully drawn AND painted  
+     */
+    function waitForSVGRender() {
+      return new Promise((resolve) => {
+        let attempts = 0;
+
+        function check() {
+          attempts++;
+
+          const svgInPopup = popup.document.querySelector("svg");
+          if (!svgInPopup) return resolve(); // fallback
+
+          const bbox = svgInPopup.getBBox();
+          if (bbox.width > 0 && bbox.height > 0) {
+            // Safari has rendered it
+            return resolve();
+          }
+
+          if (attempts > 20) return resolve(); // timeout fallback
+
+          requestAnimationFrame(check);
+        }
+
+        check();
+      });
+    }
+
+    waitForSVGRender().then(() => {
+      popup.focus();
       popup.print();
-      popup.close();
-    }, 600);
+
+      setTimeout(() => popup.close(), 1200);
+    });
   });
 })();
 
