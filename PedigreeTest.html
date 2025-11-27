@@ -756,7 +756,7 @@ function enablePinchZoom() {
     inst.resetZoom();
     inst.center();
     inst.zoom(1.45);
-    inst.pan({ x: 60, y: 120 });
+    inst.pan({ x: 60, y: 110 });
   }
 
   function restoreAfterPrint() {
@@ -834,7 +834,7 @@ setSvgImage('background-image', 'background-image');
     inst.resetZoom(); 
     // Use the optimized scale/pan values (These values look correct for a landscape fit)
     inst.zoom(3.00); 
-    inst.pan({ x: 20, y: 90 });
+    inst.pan({ x: 30, y: 70 });
     
     // Give the panZoom library a moment to apply the transform to the DOM
     requestAnimationFrame(() => {
