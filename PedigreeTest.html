@@ -114,16 +114,28 @@ svg {
       margin: 0 !important;
       box-sizing: border-box !important;
       padding: 0 !important;
+      overflow: visible !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
     }
-    
+
     /* ADDED FIX: Force SVG content to display without unintended transforms in print */
     #pedigree-container svg {
       transform: scale(1) translate(0, 0) !important;
-      position: absolute !important; 
+      position: absolute !important;
       top: 0;
       left: 0;
     }
-    
+
+    /* Ensure all pedigree elements stay visible when printing */
+    #pedigree-container,
+    #pedigree-container svg,
+    #pedigree-container svg * {
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+  
     #pedigree-container > * {
       transform: none !important;
     }
