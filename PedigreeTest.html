@@ -807,96 +807,86 @@ setSvgImage('signature', 'signature');
 setSvgImage('background-image', 'background-image');
 </script>
 
-<script>
-/* === Mobile Print (patched with viewBox expansion) === */
+  <script>
+/* === Mobile Print WITH matching desktop zoom/pan logic === */
 (function() {
   const btn = document.getElementById("print-btn");
   if (!btn) return;
 
   btn.addEventListener("click", (event) => {
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (!isMobile) return; // only affects mobile
+    if (!isMobile) return;
 
     event.preventDefault();
 
     const container = document.getElementById("pedigree-container");
-    if (!container) return;
+    const svgEl = document.getElementById("pedigree-svg");
+    if (!container || !svgEl) return;
 
-    /** STEP 1 — Grab raw SVG markup */
-    let svgMarkup = container.innerHTML;
+    const svgMarkup = container.innerHTML;
 
-    /** STEP 2 — Expand the viewBox INSIDE THE STRING, NOT IN DOM */
-    svgMarkup = svgMarkup.replace(
-      /viewBox="([^"]+)"/,
-      function(_, vb) {
-        const parts = vb.split(" ").map(Number);
-        let [x, y, w, h] = parts;
+    const styleBlocks = Array.from(document.querySelectorAll("style"))
+      .map(s => s.outerHTML)
+      .join("\n");
 
-        // Expand borders for safe mobile print margins
-        const padX = w * 0.05;   // 5% extra room left/right
-        const padY = h * 0.05;   // 5% extra room top/bottom
-
-        const newVB =
-          `${x - padX} ${y - padY} ${w + padX * 20} ${h + padY * 20}`;
-
-        return `viewBox="${newVB}"`;
-      }
-    );
-
-    /** STEP 3 — Grab all CSS */
-    const styleBlocks = Array.from(document.querySelectorAll('style'))
-      .map(styleEl => styleEl.outerHTML)
-      .join('\n');
-
-    /** STEP 4 — Open the popup */
     const popup = window.open("", "_blank", "width=1200,height=800");
     if (!popup) {
-      alert("Please allow pop-ups for ShowTails to print pedigrees.");
+      alert("Please allow pop-ups for ShowTails.");
       return;
     }
 
-    /** STEP 5 — Write HTML (SVG already expanded) */
     popup.document.write(`
       <html>
-        <head>
-          <title>Print Pedigree</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          ${styleBlocks}
-          <style>
-            @page { size: landscape; margin: 0; }
-            html, body {
-              width: 11in;
-              height: 8.5in;
-              margin: 0;
-              padding: 0;
-              background: white;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-            svg {
-              width: 10.8in !important;
-              height: 8.3in !important;
-              background: white !important;
-              margin: auto;
-              display: block;
-            }
-          </style>
-        </head>
-        <body>${svgMarkup}</body>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        ${styleBlocks}
+        <style>
+          @page { size: landscape; margin: 0; }
+          html, body {
+            margin:0; padding:0;
+            width:100%; height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:white;
+          }
+          #wrapper { display:flex; }
+        </style>
+      </head>
+      <body>
+        <div id="wrapper">${svgMarkup}</div>
+      </body>
       </html>
     `);
+
     popup.document.close();
 
-    /** STEP 6 — Wait and print */
-    setTimeout(() => {
-      popup.focus();
-      popup.print();
-      setTimeout(() => popup.close(), 1500);
-    }, 600);
+    // Apply desktop-like pan/zoom logic inside the popup
+    function applyMobilePrintTransform(svg) {
+      const printScale = 1.45;   // same as desktop
+      const printPanX = 60;
+      const printPanY = 125;
+
+      svg.style.transformOrigin = "0 0";
+      svg.style.transform =
+        `translate(${printPanX}px, ${printPanY}px) scale(${printScale})`;
+    }
+
+    popup.onload = () => {
+      const printedSvg = popup.document.querySelector("svg");
+      if (!printedSvg) return;
+
+      applyMobilePrintTransform(printedSvg);
+
+      setTimeout(() => {
+        popup.print();
+        setTimeout(() => popup.close(), 1500);
+      }, 600);
+    };
   });
 })();
 </script>
+
 
   <script>
 // === Glide-safe Clickable Pedigree Boxes ===
