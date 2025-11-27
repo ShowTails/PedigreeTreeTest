@@ -70,7 +70,7 @@ svg {
   .title { font-weight: bold; font-size: 20px; }
 
   .credit {
-    font-size: 12px;
+    font-size: 14px;
     fill: #000;
   }
 
@@ -850,7 +850,7 @@ setSvgImage('background-image', 'background-image');
           .map(styleEl => styleEl.outerHTML)
           .join('\n');
 
-        const popup = window.open("", "_blank", "width=1200,height=900");
+        const popup = window.open("", "_blank", "width=1200,height=800");
         if (!popup) {
           alert("Please allow pop-ups for ShowTails to print pedigrees.");
           return;
@@ -861,7 +861,7 @@ setSvgImage('background-image', 'background-image');
           <html>
             <head>
               <title>Print Pedigree</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1.35">
+              <meta name="viewport" content="width=device-width, initial-scale=1.25">
               ${styleBlocks}
               <style>
                 @page { size: landscape; margin: 0; }
