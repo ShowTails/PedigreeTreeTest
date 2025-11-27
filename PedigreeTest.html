@@ -832,7 +832,7 @@ setSvgImage('background-image', 'background-image');
     // 2. APPLY the desired print state
     inst.resetZoom(); 
     // Use the optimized scale/pan values (These values look correct for a landscape fit)
-    inst.zoom(2.65); 
+    inst.zoom(2.5); 
     inst.pan({ x: 50, y: 100 });
     
     // Give the panZoom library a moment to apply the transform to the DOM
@@ -866,7 +866,7 @@ setSvgImage('background-image', 'background-image');
                 @page { size: landscape; margin: 0; }
                 html, body {
                   width: 10.25in;
-                  height: 7.75in;
+                  height: 7.5in;
                   overflow: hidden;
                   margin: 0;
                   padding: 0;
@@ -879,7 +879,7 @@ setSvgImage('background-image', 'background-image');
                 /* New container style to force print area and prevent second page */
                 #pedigree-container {
                     width: 10.25in;
-                    height: 7.75in;
+                    height: 7.5in;
                     margin: 0;
                     padding: 0;
                     display: flex;
@@ -889,7 +889,7 @@ setSvgImage('background-image', 'background-image');
                 }
                 svg {
                   width: 10.25in !important;
-                  height: 7.75in !important;
+                  height: 7.5in !important;
                   background: white !important;
                   margin: 0;
                   display: block;
