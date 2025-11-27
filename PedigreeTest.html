@@ -808,9 +808,9 @@ setSvgImage('background-image', 'background-image');
 </script>
 
 <script>
-/* ============================
-   MOBILE PRINT – FIXED ZOOM & PAN (NO USER RESTORE)
-   ============================ */
+/* ==========================================
+   MOBILE PRINT — FORCE DEFAULT ZOOM/PAN
+   ========================================== */
 (function () {
   const btn = document.getElementById("print-btn");
   if (!btn) return;
@@ -818,35 +818,63 @@ setSvgImage('background-image', 'background-image');
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
   btn.addEventListener("click", (e) => {
-    if (!isMobile) return;  
+    if (!isMobile) return; 
     e.preventDefault();
 
     const inst = window.panZoomInstance;
-    if (!inst) {
-      console.error("panZoomInstance missing.");
-      window.print();
-      return;
+    const svg = document.getElementById("pedigree-svg");
+
+    if (!svg) return;
+
+    /* Save user state but DO NOT use it for printing */
+    let saved = null;
+    if (inst) {
+      saved = {
+        zoom: inst.getZoom(),
+        pan: inst.getPan(),
+      };
     }
 
-    /* === Force YOUR print layout === */
-    inst.resetZoom();
-    inst.center();
+    /* ----------------------------------------------
+       🎯 1. CLEAR ALL PAN/ZOOM TRANSFORMS FOR PRINT
+       ---------------------------------------------- */
+    if (inst) inst.disableZoom();
+    if (inst) inst.disablePan();
 
-    // ⭐ THESE VALUES NOW ALWAYS APPLY
-    inst.zoom(1.45);           
-    inst.pan({ x: 60, y: 120 });  
+    svg.removeAttribute("transform");
+    svg.style.transform = "none";
 
-    /* Wait for zoom/pan to visually apply */
+    /* ----------------------------------------------
+       🎯 2. APPLY YOUR PRINT DEFAULTS
+       ---------------------------------------------- */
+    if (inst) {
+      inst.resetZoom();
+      inst.center();
+      inst.zoom(1.45);         // ← your correct print zoom
+      inst.pan({ x: 60, y: 120 });   // ← your correct print pan
+    }
+
+    /* ----------------------------------------------
+       🎯 3. WAIT 300ms so iOS Safari applies layout
+       ---------------------------------------------- */
     setTimeout(() => {
       window.print();
 
-      // ⭐ DO NOT RESTORE USER VIEW
-      // (explicitly do nothing here)
+      /* Restore user state AFTER print */
+      setTimeout(() => {
+        if (inst && saved) {
+          inst.enableZoom();
+          inst.enablePan();
+          inst.zoom(saved.zoom);
+          inst.pan(saved.pan);
+        }
+      }, 600);
 
     }, 350);
   });
 })();
 </script>
+
 
 
 
