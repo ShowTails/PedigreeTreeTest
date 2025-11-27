@@ -786,9 +786,6 @@ function enablePinchZoom() {
 
 </script>
 
-   
-
-
   <script>
 const params = new URLSearchParams(window.location.search);
 
@@ -811,141 +808,94 @@ setSvgImage('background-image', 'background-image');
 </script>
 
 <script>
-      /* === Mobile Print (POPUP WINDOW FIX) === */
+/* === Mobile Print (patched with viewBox expansion) === */
 (function() {
   const btn = document.getElementById("print-btn");
   if (!btn) return;
 
   btn.addEventListener("click", (event) => {
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (!isMobile) return;
+    if (!isMobile) return; // only affects mobile
 
     event.preventDefault();
 
-    const svg = document.getElementById("pedigree-svg");
-    const inst = window.panZoomInstance;
-    if (!svg || !inst) return;
+    const container = document.getElementById("pedigree-container");
+    if (!container) return;
 
-    // Save current state
-    const savedState = { pan: inst.getPan(), zoom: inst.getZoom() };
+    /** STEP 1 — Grab raw SVG markup */
+    let svgMarkup = container.innerHTML;
 
-    // Reset for capture
-    inst.resetZoom();
-    inst.center();
-    inst.zoom(1);
+    /** STEP 2 — Expand the viewBox INSIDE THE STRING, NOT IN DOM */
+    svgMarkup = svgMarkup.replace(
+      /viewBox="([^"]+)"/,
+      function(_, vb) {
+        const parts = vb.split(" ").map(Number);
+        let [x, y, w, h] = parts;
 
-    // Clone with proper namespaces
-    const svgClone = svg.cloneNode(true);
-    svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    svgClone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+        // Expand borders for safe mobile print margins
+        const padX = w * 0.05;   // 5% extra room left/right
+        const padY = h * 0.05;   // 5% extra room top/bottom
 
-    // Expand viewBox to fit page
-    const vb = svg.viewBox.baseVal;
-    const pageRatio = 11 / 8.5;
-    const svgRatio = vb.width / vb.height;
+        const newVB =
+          `${x - padX} ${y - padY} ${w + padX * 2} ${h + padY * 2}`;
 
-    let newW = vb.width;
-    let newH = vb.height;
-
-    if (svgRatio < pageRatio) newW = vb.height * pageRatio;
-    else newH = vb.width / pageRatio;
-
-    const expandX = (newW - vb.width) / 2;
-    const expandY = (newH - vb.height) / 2;
-
-    svgClone.setAttribute(
-      "viewBox",
-      `${vb.x - expandX} ${vb.y - expandY} ${newW} ${newH}`
+        return `viewBox="${newVB}"`;
+      }
     );
 
-    const svgMarkup = new XMLSerializer().serializeToString(svgClone);
+    /** STEP 3 — Grab all CSS */
+    const styleBlocks = Array.from(document.querySelectorAll('style'))
+      .map(styleEl => styleEl.outerHTML)
+      .join('\n');
 
-    // Restore screen view
-    inst.zoom(savedState.zoom);
-    inst.pan(savedState.pan);
-
-    const styleBlocks = Array.from(document.querySelectorAll("style"))
-      .map((s) => s.outerHTML)
-      .join("\n");
-
+    /** STEP 4 — Open the popup */
     const popup = window.open("", "_blank", "width=1200,height=800");
+    if (!popup) {
+      alert("Please allow pop-ups for ShowTails to print pedigrees.");
+      return;
+    }
 
+    /** STEP 5 — Write HTML (SVG already expanded) */
     popup.document.write(`
       <html>
         <head>
+          <title>Print Pedigree</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           ${styleBlocks}
           <style>
             @page { size: landscape; margin: 0; }
             html, body {
-              width: 100%;
-              height: 100%;
+              width: 11in;
+              height: 8.5in;
               margin: 0;
               padding: 0;
               background: white;
               display: flex;
-              justify-content: center;
               align-items: center;
-            }
-            #wrap {
-              width: 100%;
-              height: 100%;
-              display: flex;
               justify-content: center;
-              align-items: center;
-              overflow: hidden;
             }
             svg {
-              width: 100%;
-              height: 100%;
+              width: 10.8in !important;
+              height: 8.3in !important;
+              background: white !important;
+              margin: auto;
+              display: block;
             }
           </style>
         </head>
-        <body>
-          <div id="wrap">${svgMarkup}</div>
-        </body>
+        <body>${svgMarkup}</body>
       </html>
     `);
     popup.document.close();
 
-    /**  
-     * 🚀 SAFARI FIX: Ensure rendering before print  
-     * iOS won’t print SVG until the DOM is fully drawn AND painted  
-     */
-    function waitForSVGRender() {
-      return new Promise((resolve) => {
-        let attempts = 0;
-
-        function check() {
-          attempts++;
-
-          const svgInPopup = popup.document.querySelector("svg");
-          if (!svgInPopup) return resolve(); // fallback
-
-          const bbox = svgInPopup.getBBox();
-          if (bbox.width > 0 && bbox.height > 0) {
-            // Safari has rendered it
-            return resolve();
-          }
-
-          if (attempts > 20) return resolve(); // timeout fallback
-
-          requestAnimationFrame(check);
-        }
-
-        check();
-      });
-    }
-
-    waitForSVGRender().then(() => {
+    /** STEP 6 — Wait and print */
+    setTimeout(() => {
       popup.focus();
       popup.print();
-
-      setTimeout(() => popup.close(), 1200);
-    });
+      setTimeout(() => popup.close(), 1500);
+    }, 600);
   });
 })();
-
 </script>
 
   <script>
