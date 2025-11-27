@@ -809,7 +809,7 @@ setSvgImage('background-image', 'background-image');
 
 <script>
 /* ============================
-   MOBILE PRINT WITH TRUE PAN/Z0OM CONTROL
+   MOBILE PRINT – FIXED ZOOM & PAN (NO USER RESTORE)
    ============================ */
 (function () {
   const btn = document.getElementById("print-btn");
@@ -818,7 +818,7 @@ setSvgImage('background-image', 'background-image');
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
   btn.addEventListener("click", (e) => {
-    if (!isMobile) return;   // desktop uses the main logic
+    if (!isMobile) return;  
     e.preventDefault();
 
     const inst = window.panZoomInstance;
@@ -828,37 +828,26 @@ setSvgImage('background-image', 'background-image');
       return;
     }
 
-    /* Save user’s zoom + pan */
-    const saved = {
-      zoom: inst.getZoom(),
-      pan: inst.getPan()
-    };
-    window._mobileSaved = saved;
-
-    /* === Apply PRINT positioning here (just like desktop) === */
+    /* === Force YOUR print layout === */
     inst.resetZoom();
     inst.center();
 
-    // ⭐ Adjust these 3 values until the print preview is perfect
-    inst.zoom(2.85);              // scale factor for mobile
-    inst.pan({ x: 60, y: 120 });  // position correction for mobile
+    // ⭐ THESE VALUES NOW ALWAYS APPLY
+    inst.zoom(1.45);           
+    inst.pan({ x: 60, y: 120 });  
 
-    /* Wait for transforms to apply before opening print */
+    /* Wait for zoom/pan to visually apply */
     setTimeout(() => {
       window.print();
 
-      /* Restore after printing */
-      setTimeout(() => {
-        const restore = window._mobileSaved;
-        if (restore) {
-          inst.zoom(restore.zoom);
-          inst.pan(restore.pan);
-        }
-      }, 600);
-    }, 300);
+      // ⭐ DO NOT RESTORE USER VIEW
+      // (explicitly do nothing here)
+
+    }, 350);
   });
 })();
 </script>
+
 
 
   <script>
