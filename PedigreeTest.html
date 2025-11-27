@@ -81,18 +81,21 @@ svg {
 
   @media print {
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 10.5in;
+      height: 8in;
       margin: 0;
       padding: 0;
       overflow: hidden !important;
       background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* Center the pedigree on the page */
     #pedigree-container {
-      width: 100vw;
-      height: 100vh;
+      width: 10.5in;
+      height: 8in;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -100,11 +103,12 @@ svg {
       padding: 0;
       background: white;
       overflow: hidden; /* Prevent second page generation */
+      box-sizing: border-box;
     }
 
     svg {
-      width: 100% !important;
-      height: 100% !important;
+      width: 10.5in !important;
+      height: 8in !important;
       transform: none !important;
       background: white !important;
       margin: 0 !important;
