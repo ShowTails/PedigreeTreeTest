@@ -865,13 +865,13 @@ setSvgImage('background-image', 'background-image');
           <html>
             <head>
               <title>Print Pedigree</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1.25">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
               ${styleBlocks}
               <style>
                 @page { size: landscape; margin: 0; }
                 html, body {
-                  width: 10.5in;
-                  height: 8in;
+                  width: 100vw;
+                  height: 100vh;
                   overflow: hidden;
                   margin: 0;
                   padding: 0;
@@ -879,27 +879,46 @@ setSvgImage('background-image', 'background-image');
                   display: flex;
                   align-items: center;
                   justify-content: center;
-  
+                  position: fixed;
+                  inset: 0;
+                  box-sizing: border-box;
+                  page-break-after: avoid;
                 }
                 /* New container style to force print area and prevent second page */
                 #pedigree-container {
-                    width: 10.5in;
-                    height: 8in;
-                    margin: 0;
-                    padding: 0;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    overflow: hidden;
+                  position: fixed;
+                  inset: 0;
+                  margin: 0;
+                  padding: 0;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  overflow: hidden;
+                  box-sizing: border-box;
+                  page-break-inside: avoid;
+                  max-width: 10.5in;
+                  max-height: 8in;
                 }
                 svg {
-                  width: 10.5in !important;
-                  height: 8in !important;
+                  width: 100% !important;
+                  height: 100% !important;
+                  max-width: 10.5in;
+                  max-height: 8in;
                   background: white !important;
                   margin: 0;
                   display: block;
                   /* Keep the full background visible and centered */
                   transform: none !important;
+                  box-sizing: border-box;
+                  page-break-inside: avoid;
+                }
+                @media print {
+                  html, body, #pedigree-container, svg {
+                    width: 100vw;
+                    height: 100vh;
+                    max-width: 10.5in;
+                    max-height: 8in;
+                  }
                 }
               </style>
             </head>
