@@ -833,7 +833,7 @@ setSvgImage('background-image', 'background-image');
     // 2. APPLY the desired print state
     inst.resetZoom(); 
     // Use the optimized scale/pan values (These values look correct for a landscape fit)
-    inst.zoom(2.7); 
+    inst.zoom(2.6); 
     inst.pan({ x: 50, y: 100 });
     
     // Give the panZoom library a moment to apply the transform to the DOM
@@ -850,7 +850,7 @@ setSvgImage('background-image', 'background-image');
           .map(styleEl => styleEl.outerHTML)
           .join('\n');
 
-        const popup = window.open("", "_blank", "width=1200,height=800");
+        const popup = window.open("", "_blank", "width=1200,height=900");
         if (!popup) {
           alert("Please allow pop-ups for ShowTails to print pedigrees.");
           return;
@@ -861,7 +861,7 @@ setSvgImage('background-image', 'background-image');
           <html>
             <head>
               <title>Print Pedigree</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1.25">
+              <meta name="viewport" content="width=device-width, initial-scale=1.35">
               ${styleBlocks}
               <style>
                 @page { size: landscape; margin: 0; }
