@@ -174,7 +174,12 @@ function getParam(name) {
 <body>
 
   <div id="pedigree-container">
-<svg id="pedigree-svg" viewBox="-80 -170 1750 1450" preserveAspectRatio="xMidYMid meet">
+<svg
+  id="pedigree-svg"
+  viewBox="-80 -170 1750 1450"
+  preserveAspectRatio="xMidYMid meet"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
 
 <image
   id="background-image"
@@ -847,11 +852,18 @@ setSvgImage('background-image', 'background-image');
     const savedState = { pan: inst.getPan(), zoom: inst.getZoom() };
 
     // 2. APPLY the desired print state
-    inst.resetZoom(); 
+    inst.resetZoom();
     // Use the optimized scale/pan values (These values look correct for a landscape fit)
-    inst.zoom(2.5); 
+    inst.zoom(2.5);
     inst.pan({ x: 50, y: 100 });
-    
+
+    // Ensure the serialized SVG keeps its namespaces when copied into the popup
+    const svgEl = document.getElementById("pedigree-svg");
+    if (svgEl) {
+      svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      svgEl.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+    }
+
     // Give the panZoom library a moment to apply the transform to the DOM
     requestAnimationFrame(() => {
         // 3. RETRIEVE the *transformed* SVG markup
