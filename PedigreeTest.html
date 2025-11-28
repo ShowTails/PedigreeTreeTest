@@ -157,7 +157,7 @@ function getParam(name) {
 <body>
 
   <div id="pedigree-container">
-<svg id="pedigree-svg" viewBox="-80 -170 1750 1450" preserveAspectRatio="xMidYMid meet">
+<svg id="pedigree-svg" viewBox="-80 -170 1750 1400" preserveAspectRatio="none">
 
 <image
   id="background-image"
@@ -866,7 +866,7 @@ setSvgImage('background-image', 'background-image');
                 @page { size: landscape; margin: 0; }
                 html, body {
                   width: 10.25in;
-                  height: 7.4in;
+                  height: 7.5in;
                   overflow: hidden;
                   margin: 0;
                   padding: 0;
@@ -879,7 +879,7 @@ setSvgImage('background-image', 'background-image');
                 /* New container style to force print area and prevent second page */
                 #pedigree-container {
                     width: 10.25in;
-                    height: 7.4in;
+                    height: 7.5in;
                     margin: 0;
                     padding: 0;
                     display: flex;
@@ -889,7 +889,7 @@ setSvgImage('background-image', 'background-image');
                 }
                 svg {
                   width: 10.25in !important;
-                  height: 7.4in !important;
+                  height: 7.5in !important;
                   background: white !important;
                   margin: 0;
                   display: block;
