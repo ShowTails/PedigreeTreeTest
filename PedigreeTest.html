@@ -17,8 +17,8 @@
   }
 
 #pedigree-container {
-  width: 10.5in;
-  height: 7.5in;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,6 +36,7 @@ svg {
   transform: none !important;
   margin: 0 auto !important;
   background: white !important;
+  page-break-inside: avoid !important;
     touch-action: none !important;
   -ms-touch-action: none !important;
 }
@@ -73,7 +74,7 @@ svg {
   }
 
   @page {
-    size: 10.5in 7.5in landscape;
+    size: 11in 8.5in landscape;
     margin: 0;
   }
 
@@ -109,6 +110,22 @@ svg {
       padding: 0 !important;
       overflow: hidden;
     }
+    
+    /* ADDED FIX: Force SVG content to display without unintended transforms in print */
+    #pedigree-container svg {
+      transform: scale(1) translate(0, 0) !important;
+      position: absolute !important; 
+      top: 0;
+      left: 0;
+    }
+    
+    #pedigree-container > * {
+      transform: none !important;
+    }
+
+    #logo {
+
+    }
 
 
     #print-btn,
@@ -140,14 +157,14 @@ function getParam(name) {
 <body>
 
   <div id="pedigree-container">
-<svg id="pedigree-svg" viewBox="-80 -170 1800 1450" preserveAspectRatio="xMidYMid meet">
+<svg id="pedigree-svg" viewBox="-80 -170 1750 1450" preserveAspectRatio="xMidYMid meet">
 
 <image
   id="background-image"
   x="-125"
-  y="-280"
+  y="-275"
   width="1800"
-  height="1450"
+  height="1500"
   preserveAspectRatio="xMidYMid meet"
 />
 
