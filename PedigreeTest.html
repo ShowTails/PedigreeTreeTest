@@ -36,7 +36,6 @@ svg {
   transform: none !important;
   margin: 0 auto !important;
   background: white !important;
-  page-break-inside: avoid !important;
     touch-action: none !important;
   -ms-touch-action: none !important;
 }
@@ -110,22 +109,6 @@ svg {
       padding: 0 !important;
       overflow: hidden;
     }
-    
-    /* ADDED FIX: Force SVG content to display without unintended transforms in print */
-    #pedigree-container svg {
-      transform: scale(1) translate(0, 0) !important;
-      position: absolute !important; 
-      top: 0;
-      left: 0;
-    }
-    
-    #pedigree-container > * {
-      transform: none !important;
-    }
-
-    #logo {
-
-    }
 
 
     #print-btn,
@@ -157,14 +140,14 @@ function getParam(name) {
 <body>
 
   <div id="pedigree-container">
-<svg id="pedigree-svg" viewBox="-80 -170 1750 1400" preserveAspectRatio="none">
+<svg id="pedigree-svg" viewBox="-80 -170 984 720" preserveAspectRatio="xMidYMid meet">
 
 <image
   id="background-image"
   x="-125"
   y="-280"
-  width="1800"
-  height="1500"
+  width="984"
+  height="720"
   preserveAspectRatio="xMidYMid meet"
 />
 
